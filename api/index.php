@@ -9,7 +9,7 @@ $chat_id = $update["message"]["chat"]["id"] ?? null;
 $text = $update["message"]["text"] ?? "";
 
 if($text == "/start"){
-    file_get_contents($website."/sendMessage?chat_id=".$chat_id."&text=Bot Online ✅");
+    file_get_contents($website."/sendMessage?chat_id=".$chat_id."&text=Bot Online 🤖✅");
 }
 
 ?>
