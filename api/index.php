@@ -87,7 +87,7 @@ bot("sendMessage",[
 "chat_id"=>$chat_id,
 "text"=>"Open this link and earn ₹1
 
-https://your-shortlink.com/example"
+https://shrinkme.click/Sandeep"
 ]);
 
 }
@@ -96,7 +96,7 @@ https://your-shortlink.com/example"
 
 elseif($text == "👥 Refer"){
 
-$ref_link = "https://t.me/YOUR_BOT_USERNAME?start=".$user_id;
+$ref_link = "https://t.me/sbsupportXbot?start=".$user_id;
 
 bot("sendMessage",[
 "chat_id"=>$chat_id,
