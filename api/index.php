@@ -3,33 +3,53 @@
 $botToken = "8525855467:AAH-RqbT16Kpg7R9uU7t0DsAdOVRUYJLb34";
 $website = "https://api.telegram.org/bot".$botToken;
 
-$admin = 6415960307; // Yaha apni Telegram ID dalo
+$admin = 6415960307;
 
-$update = json_decode(file_get_contents("php://input"), true);
+// GET UPDATE SAFELY
+$content = file_get_contents("php://input");
+$update = json_decode($content, true);
 
-$chat_id = $update["message"]["chat"]["id"];
-$user_id = $update["message"]["from"]["id"];
-$text = $update["message"]["text"];
+if(!$update){
+exit;
+}
 
-$data = json_decode(file_get_contents("users.json"),true);
+$message = $update["message"] ?? null;
+
+if(!$message){
+exit;
+}
+
+$chat_id = $message["chat"]["id"] ?? null;
+$user_id = $message["from"]["id"] ?? null;
+$text = $message["text"] ?? "";
+
+// USERS FILE
+if(!file_exists("users.json")){
+file_put_contents("users.json", json_encode([]));
+}
+
+$data = json_decode(file_get_contents("users.json"), true);
+
 if(!$data){
 $data = [];
 }
 
+// BOT FUNCTION
 function bot($method,$data){
 global $website;
+
 $url = $website."/".$method;
 
-$options=[
-'http'=>[
-'method'=>"POST",
-'header'=>"Content-Type:application/json",
-'content'=>json_encode($data)
+$options = [
+'http' => [
+'method'  => 'POST',
+'header'  => "Content-Type: application/json",
+'content' => json_encode($data)
 ]
 ];
 
-$context=stream_context_create($options);
-file_get_contents($url,false,$context);
+$context = stream_context_create($options);
+return file_get_contents($url,false,$context);
 }
 
 /* START */
@@ -38,15 +58,15 @@ if($text == "/start"){
 
 if(!in_array($user_id,$data)){
 $data[] = $user_id;
-file_put_contents("users.json",json_encode($data));
+file_put_contents("users.json", json_encode($data));
 }
 
-$keyboard=[
-'keyboard'=>[
+$keyboard = [
+'keyboard' => [
 [['text'=>"💰 Earn"]],
 [['text'=>"👥 Refer"]]
 ],
-'resize_keyboard'=>true
+'resize_keyboard' => true
 ];
 
 bot("sendMessage",[
@@ -61,7 +81,7 @@ bot("sendMessage",[
 
 /* EARN BUTTON */
 
-if($text == "💰 Earn"){
+elseif($text == "💰 Earn"){
 
 bot("sendMessage",[
 "chat_id"=>$chat_id,
@@ -72,9 +92,25 @@ https://your-shortlink.com/example"
 
 }
 
+/* REFER BUTTON */
+
+elseif($text == "👥 Refer"){
+
+$ref_link = "https://t.me/YOUR_BOT_USERNAME?start=".$user_id;
+
+bot("sendMessage",[
+"chat_id"=>$chat_id,
+"text"=>"👥 Invite friends and earn money
+
+Your referral link:
+$ref_link"
+]);
+
+}
+
 /* ADMIN PANEL */
 
-if($text == "/admin" && $user_id == $admin){
+elseif($text == "/admin" && $user_id == $admin){
 
 $total = count($data);
 
@@ -87,4 +123,4 @@ bot("sendMessage",[
 
 }
 
-?
+?>
