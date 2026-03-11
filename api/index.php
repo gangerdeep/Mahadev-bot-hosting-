@@ -3,48 +3,20 @@
 $botToken = "8525855467:AAH-RqbT16Kpg7R9uU7t0DsAdOVRUYJLb34";
 $website = "https://api.telegram.org/bot".$botToken;
 
-$admin = 6415960307;
+$update = json_decode(file_get_contents("php://input"), true);
 
-// GET UPDATE SAFELY
-$content = file_get_contents("php://input");
-$update = json_decode($content, true);
+$chat_id = $update["message"]["chat"]["id"];
 
-if(!$update){
-exit;
-}
-
-$message = $update["message"] ?? null;
-
-if(!$message){
-exit;
-}
-
-$chat_id = $message["chat"]["id"] ?? null;
-$user_id = $message["from"]["id"] ?? null;
-$text = $message["text"] ?? "";
-
-// USERS FILE
-if(!file_exists("users.json")){
-file_put_contents("users.json", json_encode([]));
-}
-
-$data = json_decode(file_get_contents("users.json"), true);
-
-if(!$data){
-$data = [];
-}
-
-// BOT FUNCTION
+// Function
 function bot($method,$data){
-global $website;
-
-$url = $website."/".$method;
+global $botToken;
+$url = "https://api.telegram.org/bot".$botToken."/".$method;
 
 $options = [
-'http' => [
-'method'  => 'POST',
-'header'  => "Content-Type: application/json",
-'content' => json_encode($data)
+'http'=>[
+'method'=>"POST",
+'header'=>"Content-Type:application/json",
+'content'=>json_encode($data)
 ]
 ];
 
@@ -52,73 +24,33 @@ $context = stream_context_create($options);
 return file_get_contents($url,false,$context);
 }
 
-/* START */
+// START
+if(isset($update["message"]["text"])){
+$text = $update["message"]["text"];
 
 if($text == "/start"){
-
-if(!in_array($user_id,$data)){
-$data[] = $user_id;
-file_put_contents("users.json", json_encode($data));
-}
-
-$keyboard = [
-'keyboard' => [
-[['text'=>"💰 Earn"]],
-[['text'=>"👥 Refer"]]
-],
-'resize_keyboard' => true
-];
-
-bot("sendMessage",[
-"chat_id"=>$chat_id,
-"text"=>"🤖 Welcome
-
-💸 Earn money by opening links",
-"reply_markup"=>$keyboard
+bot('sendMessage',[
+'chat_id'=>$chat_id,
+'text'=>"📸 Send me a photo and I will convert it to URL."
 ]);
-
+}
 }
 
-/* EARN BUTTON */
+// PHOTO
+if(isset($update["message"]["photo"])){
 
-elseif($text == "💰 Earn"){
+$photo = end($update["message"]["photo"]);
+$file_id = $photo["file_id"];
 
-bot("sendMessage",[
-"chat_id"=>$chat_id,
-"text"=>"Open this link and earn ₹1
+// get file
+$file = json_decode(file_get_contents($website."/getFile?file_id=".$file_id),true);
+$file_path = $file["result"]["file_path"];
 
-https://shrinkme.click/Sandeep"
-]);
+$url = "https://api.telegram.org/file/bot".$botToken."/".$file_path;
 
-}
-
-/* REFER BUTTON */
-
-elseif($text == "👥 Refer"){
-
-$ref_link = "https://t.me/sbsupportXbot?start=".$user_id;
-
-bot("sendMessage",[
-"chat_id"=>$chat_id,
-"text"=>"👥 Invite friends and earn money
-
-Your referral link:
-$ref_link"
-]);
-
-}
-
-/* ADMIN PANEL */
-
-elseif($text == "/admin" && $user_id == $admin){
-
-$total = count($data);
-
-bot("sendMessage",[
-"chat_id"=>$chat_id,
-"text"=>"🔑 Admin Panel
-
-👥 Total Users: $total"
+bot('sendMessage',[
+'chat_id'=>$chat_id,
+'text'=>"✅ Photo URL:\n".$url
 ]);
 
 }
