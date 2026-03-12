@@ -5,8 +5,23 @@ $api = "https://api.telegram.org/bot".$botToken;
 
 $update = json_decode(file_get_contents("php://input"), true);
 
-$chat = $update["message"]["chat"]["id"];
-$text = $update["message"]["text"];
+if(!$update){
+exit;
+}
+
+$message = $update["message"] ?? null;
+
+if(!$message){
+exit;
+}
+
+$chat = $message["chat"]["id"];
+$text = $message["text"] ?? "";
+
+# LOAD DATA
+if(!file_exists("data/bots.json")){
+file_put_contents("data/bots.json","{}");
+}
 
 $data = json_decode(file_get_contents("data/bots.json"),true);
 if(!$data) $data = [];
@@ -41,13 +56,13 @@ bot("sendMessage",[
 }
 
 # FILE RECEIVE
-if(isset($update["message"]["document"])){
+if(isset($message["document"])){
 
-$step = $data[$chat]["step"];
+$step = $data[$chat]["step"] ?? "";
 
 if($step == "file"){
 
-$file_id = $update["message"]["document"]["file_id"];
+$file_id = $message["document"]["file_id"];
 
 $file = json_decode(file_get_contents($api."/getFile?file_id=".$file_id),true);
 $file_path = $file["result"]["file_path"];
@@ -55,6 +70,10 @@ $file_path = $file["result"]["file_path"];
 $file_url = "https://api.telegram.org/file/bot".$botToken."/".$file_path;
 
 $content = file_get_contents($file_url);
+
+if(!is_dir("data/files")){
+mkdir("data/files",0777,true);
+}
 
 file_put_contents("data/files/".$chat.".json",$content);
 
@@ -70,7 +89,7 @@ bot("sendMessage",[
 }
 
 # TOKEN RECEIVE
-if(isset($text) && $data[$chat]["step"] == "token"){
+if(isset($text) && ($data[$chat]["step"] ?? "") == "token"){
 
 $token = $text;
 
