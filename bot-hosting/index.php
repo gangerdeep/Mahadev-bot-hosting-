@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(0);
+
 $botToken = "8568616659:AAGPG6qAIwzljFKm95IoAbFdp-nCvBEls7w";
 $api = "https://api.telegram.org/bot".$botToken;
 
@@ -18,7 +20,15 @@ exit;
 $chat = $message["chat"]["id"];
 $text = $message["text"] ?? "";
 
-# LOAD DATA
+# CREATE DATA FOLDER
+if(!is_dir("data")){
+mkdir("data");
+}
+
+if(!is_dir("data/files")){
+mkdir("data/files");
+}
+
 if(!file_exists("data/bots.json")){
 file_put_contents("data/bots.json","{}");
 }
@@ -43,14 +53,16 @@ $context = stream_context_create($options);
 return file_get_contents($url,false,$context);
 }
 
-# START
+# START COMMAND
 if($text == "/start"){
 
 $data[$chat]["step"] = "file";
 
 bot("sendMessage",[
 "chat_id"=>$chat,
-"text"=>"📂 Send your bot file in JSON format"
+"text"=>"🤖 Welcome to Bot Hosting
+
+📂 Send your bot file in JSON format"
 ]);
 
 }
@@ -71,10 +83,6 @@ $file_url = "https://api.telegram.org/file/bot".$botToken."/".$file_path;
 
 $content = file_get_contents($file_url);
 
-if(!is_dir("data/files")){
-mkdir("data/files",0777,true);
-}
-
 file_put_contents("data/files/".$chat.".json",$content);
 
 $data[$chat]["step"] = "token";
@@ -91,7 +99,7 @@ bot("sendMessage",[
 # TOKEN RECEIVE
 if(isset($text) && ($data[$chat]["step"] ?? "") == "token"){
 
-$token = $text;
+$token = trim($text);
 
 $data[$chat]["token"] = $token;
 
