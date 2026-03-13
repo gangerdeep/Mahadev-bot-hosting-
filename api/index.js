@@ -2,7 +2,7 @@ let users = {}
 
 export default async function handler(req,res){
 
-const MAIN_BOT_TOKEN = "8707141410:AAEJ-ociVrYKVbhRgijOpw_rE016KtkwvLg"
+const MAIN_BOT_TOKEN = "8707141410:AAFyP2B1OuiksMUs81Z-G8HY8GWO0HuGbsk"
 
 const update = req.body
 
