@@ -1,6 +1,6 @@
 <?php
 
-$botToken = "8707141410:AAGHrf0XkMTB7aC-2eYLJb697AfJwpBRVB4";
+$botToken = "8737264070:AAG7le54zYs8W1HArPtg376t9HBuLnQPjEQ";
 $website = "https://api.telegram.org/bot".$botToken;
 
 $update = json_decode(file_get_contents("php://input"), true);
